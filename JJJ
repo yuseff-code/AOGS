@@ -1,0 +1,137 @@
+import { useState } from "react";
+
+export default function Home() {
+  const [alarmTime, setAlarmTime] = useState("");
+  const [message, setMessage] = useState("");
+  const [answers, setAnswers] = useState({});
+  const [interviewAnswers, setInterviewAnswers] = useState({});
+
+  const questions = [
+    { category: "Effectiveness", items: [
+      "Does your focus improve after using AOGS for days?",
+      "Has AOGS influenced you to track your daily activities?",
+      "Does AOGS prevent you from playing online games excessively?",
+      "Would tracking both gaming and academic time in one place motivate you to stick to a balanced schedule?"
+    ]},
+    { category: "Academic Engagements", items: [
+      "Do you still procrastinate on your schoolwork?",
+      "Do you think AOGS helps you manage time for school and daily needs?",
+      "Does AOGS motivate you to do academic activities?"
+    ]},
+    { category: "Effects (Expected Outcome)", items: [
+      "Does AOGS help you organize everything on time?",
+      "Can you see AOGS becoming part of your everyday life?",
+      "Would a structured schedule improve your efficiency?",
+      "Do you believe AOGS will positively affect your ability to balance school and gaming?",
+      "Do you think AOGS will help you develop better time management habits?"
+    ]}
+  ];
+
+  const interviewQuestions = [
+    "Does AOGS help you ease the usage of online gaming?",
+    "What are the visible effects of using the website?",
+    "How does AOGS improve your focus on academic activities?",
+    "What are the effects of AOGS on your mental state?",
+    "How do you feel about using a platform that tracks both academic progress and online gaming time? Would you find it helpful?"
+  ];
+
+  const handleAnswerChange = (question, answer) => {
+    setAnswers((prev) => ({ ...prev, [question]: answer }));
+  };
+
+  const handleInterviewAnswerChange = (question, answer) => {
+    setInterviewAnswers((prev) => ({ ...prev, [question]: answer }));
+  };
+
+  const setAlarm = async () => {
+    if (!alarmTime) return alert("Please set a time.");
+    try {
+      const res = await fetch("/api/alarm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ time: alarmTime }),
+      });
+      const data = await res.json();
+      setMessage(data.message || "Alarm set successfully!");
+    } catch (error) {
+      setMessage("Failed to set alarm. Please try again.");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
+        <h1 className="text-2xl font-bold text-center mb-6">AOGS App</h1>
+
+        {/* Alarm Section */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold">Set Alarm</h2>
+          <input 
+            type="time" 
+            value={alarmTime} 
+            onChange={(e) => setAlarmTime(e.target.value)}
+            className="border rounded p-2 mr-2"
+          />
+          <button 
+            onClick={setAlarm} 
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Set Alarm
+          </button>
+          {message && <p className="text-green-500 mt-2">{message}</p>}
+        </div>
+
+        {/* Checklist Section */}
+        <h2 className="text-lg font-semibold mt-4">Checklist Questionnaire</h2>
+        {questions.map((section) => (
+          <div key={section.category} className="mb-6">
+            <h3 className="text-md font-semibold mt-3">{section.category}</h3>
+            <table className="border w-full mt-2">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border p-2">Question</th>
+                  <th className="border p-2">Yes</th>
+                  <th className="border p-2">No</th>
+                </tr>
+              </thead>
+              <tbody>
+                {section.items.map((question) => (
+                  <tr key={question}>
+                    <td className="border p-2">{question}</td>
+                    <td className="border p-2 text-center">
+                      <input type="radio" name={question} value="Yes" onChange={() => handleAnswerChange(question, "Yes")} />
+                    </td>
+                    <td className="border p-2 text-center">
+                      <input type="radio" name={question} value="No" onChange={() => handleAnswerChange(question, "No")} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+
+        {/* Interview Questions */}
+        <h2 className="text-lg font-semibold mt-4">Interview Questionnaire</h2>
+        <table className="border w-full mt-2">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="border p-2">Question</th>
+              <th className="border p-2">Answer</th>
+            </tr>
+          </thead>
+          <tbody>
+            {interviewQuestions.map((question) => (
+              <tr key={question}>
+                <td className="border p-2">{question}</td>
+                <td className="border p-2">
+                  <textarea rows="2" className="w-full border p-2" onChange={(e) => handleInterviewAnswerChange(question, e.target.value)}></textarea>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
